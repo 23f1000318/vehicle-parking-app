@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-tachometer-alt"></i> Welcome {{session.username}}</h2>
+    </div>
+</div>
+
+<!-- Current Reservations -->
+{% if user_reservations %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="fas fa-clock"></i> Current Reservations</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for reservation in user_reservations %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ reservation[2].prime_location_name }}</h6>
+                                <p class="card-text">
+                                    <strong>Parked Since:</strong> {{ reservation[0].parking_timestamp.strftime('%Y-%m-%d %H:%M') if reservation[0].parking_timestamp else 'N/A' }}
+                                </p>
+                                <a href="{{ url_for('release_spot', reservation_id=reservation[0].id) }}" 
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to release this parking spot?')">
+                                    <i class="fas fa-sign-out-alt"></i> Release Spot
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Available Parking Lots -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-building"></i> Available Parking Lots</h5>
+            </div>
+            <div class="card-body">
+                {% if lots %}
+                    <div class="row">
+                        {% for lot in lots %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ lot.prime_location_name }}</h6>
+                                    <p class="card-text">
+                                        <strong>Address:</strong> {{ lot.address }}<br>
+                                        <strong>Pin Code:</strong> {{ lot.pin_code }}<br>
+                                        <strong>Price:</strong> ₹{{ lot.price }}/hour<br>
+                                        <strong>Available Spots:</strong> 
+                                        <span class="status-available">{{ lot.available_spots or 0 }}</span> / {{ lot.total_spots or 0 }}
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    {% if lot.available_spots > 0 %}
+                                        <a href="{{ url_for('book_spot', lot_id=lot.id) }}" 
+                                           class="btn btn-success btn-sm w-100"
+                                           onclick="return confirm('Do you want to book a parking spot at {{ lot.prime_location_name }}?')">
+                                            <i class="fas fa-parking"></i> Book Spot
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-secondary btn-sm w-100" disabled>
+                                            <i class="fas fa-ban"></i> No Spots Available
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                        <h5>No Available Parking Lots</h5>
+                        <p class="text-muted">All parking lots are currently full. Please try again later.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Parking History -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> Recent Parking History</h5>
+            </div>
+            <div class="card-body">
+                {% if parking_history %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Location</th>
+                                    <th>Parked At</th>
+                                    <th>Left At</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for history in parking_history %}
+                                <tr>
+                                    <td>{{ history[2].prime_location_name }}</td>
+                                    <td>{{ history[0].parking_timestamp.strftime('%Y-%m-%d %H:%M') if history[0].parking_timestamp else 'N/A' }}</td>
+                                    <td>
+                                        {% if history[0].leaving_timestamp %}
+                                            {{ history[0].leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                        {% else %}
+                                            <span class="text-warning">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if history[0].parking_cost %}
+                                            ₹{{ "%.2f"|format(history[0].parking_cost) }}
+                                        {% else %}
+                                            <span class="text-muted">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if history[0].status == 'active' %}
+                                            <span class="badge bg-warning">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <h5>No Parking History</h5>
+                        <p class="text-muted">Your parking history will appear here after you book your first spot.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-line"></i> Your Statistics</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="userStatsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch user parking data
+    fetch('/api/parking_data')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('userStatsChart').getContext('2d');
+            
+            if (data.length > 0) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(item => item.month).reverse(),
+                        datasets: [
+                            {
+                                label: 'Bookings',
+                                data: data.map(item => item.bookings).reverse(),
+                                borderColor: '#007bff',
+                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Total Cost (₹)',
+                                data: data.map(item => item.total_cost).reverse(),
+                                borderColor: '#28a745',
+                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                tension: 0.4,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left'
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Show message when no data
+                ctx.fillStyle = '#6c757d';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('No parking data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user data:', error);
+            const ctx = document.getElementById('userStatsChart').getContext('2d');
+            ctx.fillStyle = '#dc3545';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Error loading chart data', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        });
+});
+</script>
+{% endblock %}

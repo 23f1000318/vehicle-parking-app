@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Parking Lot - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-plus"></i> Add New Parking Lot</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location_name" class="form-label">Prime Location Name</label>
+                                <input type="text" class="form-control" id="location_name" name="location_name" required>
+                                <div class="form-text">e.g., Downtown Mall, Airport Terminal, Business District</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Price per Hour (₹)</label>
+                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                                <div class="form-text">Parking fee charged per hour</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                        <div class="form-text">Complete address of the parking lot</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pin_code" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="pin_code" name="pin_code" pattern="[0-9]{6}" required>
+                                <div class="form-text">6-digit postal code</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="max_spots" class="form-label">Maximum Number of Spots</label>
+                                <input type="number" class="form-control" id="max_spots" name="max_spots" min="1" max="1000" required>
+                                <div class="form-text">Total parking spots available (1-1000)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Parking spots will be automatically created based on the maximum number specified. 
+                        All spots will initially be marked as available.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Parking Lot
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Pin code validation
+    const pinCodeInput = document.getElementById('pin_code');
+    pinCodeInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+    
+    // Price validation
+    const priceInput = document.getElementById('price');
+    priceInput.addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+    });
+    
+    // Max spots validation
+    const maxSpotsInput = document.getElementById('max_spots');
+    maxSpotsInput.addEventListener('input', function() {
+        if (this.value < 1) this.value = 1;
+        if (this.value > 1000) this.value = 1000;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Parking Lot - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-edit"></i> Edit Parking Lot</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location_name" class="form-label">Prime Location Name</label>
+                                <input type="text" class="form-control" id="location_name" name="location_name" 
+                                       value="{{ lot.prime_location_name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Price per Hour (₹)</label>
+                                <input type="number" class="form-control" id="price" name="price" 
+                                       step="0.01" min="0" value="{{ lot.price }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required>{{ lot.address }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pin_code" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="pin_code" name="pin_code" 
+                                       pattern="[0-9]{6}" value="{{ lot.pin_code }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="max_spots" class="form-label">Maximum Number of Spots</label>
+                                <input type="number" class="form-control" id="max_spots" name="max_spots" 
+                                       min="1" max="1000" value="{{ lot.maximum_spots }}" required>
+                                <div class="form-text">Current: {{ lot.maximum_spots }} spots</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Important:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Increasing spots will create new available parking spaces</li>
+                            <li>Decreasing spots will only work if the excess spots are currently available</li>
+                            <li>Cannot reduce spots below the number of currently occupied spots</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Update Parking Lot
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Pin code validation
+    const pinCodeInput = document.getElementById('pin_code');
+    pinCodeInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+    
+    // Price validation
+    const priceInput = document.getElementById('price');
+    priceInput.addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+    });
+    
+    // Max spots validation
+    const maxSpotsInput = document.getElementById('max_spots');
+    maxSpotsInput.addEventListener('input', function() {
+        if (this.value < 1) this.value = 1;
+        if (this.value > 1000) this.value = 1000;
+    });
+});
+</script>
+{% endblock %}
